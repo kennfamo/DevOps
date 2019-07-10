@@ -13,10 +13,15 @@
       "defaultValue": "kennethtest",
       "metadata": { "description": "name of the website" }
     },
-	"slotName": {
+    "slotName": {
       "type": "string",
       "defaultValue": "slot",
       "metadata": { "description": "name of the slot" }
+    },
+    "hostingPlanName": {
+      "type": "string",
+      "defaultValue": "plan",
+      "metadata": { "description": "name of the ASP" }    
     }
   }, // end parameters
     "resources": [
@@ -26,7 +31,11 @@
       "name": "[parameters('webAppName')]",
       "type": "Microsoft.Web/sites",
       "location": "[parameters('location')]",
-	},
+      "properties": {
+        "name": "[parameters('webAppName')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
+      }
+    },
     // App Settings
     {
       "name": "[concat(parameters('webAppName'),'/' ,'appSettings')]",
