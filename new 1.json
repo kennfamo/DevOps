@@ -26,7 +26,7 @@
       "name": "[parameters('webAppName')]",
       "type": "Microsoft.Web/sites",
       "location": "[parameters('location')]",
-	}
+	},
     // App Settings
     {
       "name": "[concat(parameters('webAppName'),'/' ,'appSettings')]",
