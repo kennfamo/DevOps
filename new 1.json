@@ -5,7 +5,7 @@
     "location": {
       "type": "string",
       "minLength": 1,
-      "defaultValue": "CentralUS",
+      "defaultValue": "Central US",
       "metadata": { "description": "Location of the resources" }
     },
     "webAppName": {
@@ -44,7 +44,7 @@
       "location": "[parameters('location')]",
       "dependsOn": [
         //"[resourceId('Microsoft.Web/sites/', variables('webSiteName'))]"
-        "[concat('Microsoft.Web/sites/', parameters('webAppName'))]"
+        "[resourceId('Microsoft.Web/sites/', parameters('webAppName'))]"
       ],
       "properties": { "Test": "[parameters('webAppName')]" }
     }, // end app settings
@@ -55,6 +55,9 @@
       "name": "[concat(parameters('webAppName'),'/',parameters('slotName'))]",
       "kind": "app",
       "location": "[parameters('location')]",
+	  "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
+      }
     } // end api slot
   ],
 } // end json
