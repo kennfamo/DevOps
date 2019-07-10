@@ -5,7 +5,7 @@
     "location": {
       "type": "string",
       "minLength": 1,
-      "defaultValue": "[resourceGroup().location]",
+      "defaultValue": "CentralUS",
       "metadata": { "description": "Location of the resources" }
     },
     "webAppName": {
