@@ -1,0 +1,170 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appName": {
+      "type": "string",
+      "maxLength": 7,
+      "metadata": {
+        "description": "The value to use for the app name. Used as part of the name for all resources which is suffixed by a unique string."
+      }
+    },
+    "slotName": {
+      "type": "string",
+      "defaultValue": "staging",
+      "metadata": {
+        "description": "The name of the deplotment slot"
+      }
+    },
+    "storageSKU": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_GRS",
+        "Standard_RAGRS"
+      ],
+      "defaultValue": "Standard_LRS",
+      "metadata": {
+        "description": "The type of replication to use for the storage account."
+      }
+    },
+    "FUNCTIONS_EXTENSION_VERSION": {
+      "type": "string",
+      "metadata": {
+        "description": "The version of the Function App runtime to use"
+      },
+      "defaultValue": "latest",
+      "allowedValues": [
+        "latest",
+        "~1",
+        "beta"
+      ]
+    },
+    "functionAppStorageName": {
+      "type": "string",
+      "defaultValue": "armslotfunco3fgkvxo63y6u"
+    },
+    "hostingPlanName": {
+      "type": "string",
+      "defaultValue": "armslot-Plan-o3fgkvxo63y6u"
+    }
+  },
+  "resources": [
+    {
+      "name": "[parameters('functionAppStorageName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2016-01-01",
+      "sku": {
+        "name": "[parameters('storageSku')]"
+      },
+      "kind": "Storage",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "for": "Functions Storage"
+      },
+      "properties": {
+      }
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "kind": "functionapp",
+      "name": "[parameters('hostingPlanName')]",
+      "apiVersion": "2015-08-01",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Y1",
+        "tier": "Dynamic",
+        "size": "Y1",
+        "family": "Y",
+        "capacity": 0
+      },
+      "properties": {
+        "name": "[parameters('hostingPlanName')]"
+      },
+      "dependsOn": []
+    },
+    {
+      "apiVersion": "2015-08-01",
+      "type": "Microsoft.Web/sites",
+      "name": "[parameters('appName')]",
+      "location": "[resourceGroup().location]",
+      "kind": "functionapp",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('functionAppStorageName'))]"
+      ],
+      "properties": {
+        "name": "[parameters('appName')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms',parameters('hostingPlanName'))]"
+      },
+      "resources": [
+        {
+          "apiVersion": "2015-08-01",
+          "name": "appsettings",
+          "type": "config",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('appName'))]"
+          ],
+          "properties": {
+            "AzureWebJobsDashboard": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('functionAppStorageName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('functionAppStorageName')), '2015-05-01-preview').key1)]",
+            "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('functionAppStorageName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('functionAppStorageName')), '2015-05-01-preview').key1)]",
+            "FUNCTIONS_EXTENSION_VERSION": "[parameters('FUNCTIONS_EXTENSION_VERSION')]",
+            "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('functionAppStorageName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('functionAppStorageName')), '2015-05-01-preview').key1)]",
+            "WEBSITE_CONTENTSHARE": "production",
+            "AzureWebJobsSecretStorageType": "Blob"
+          }
+        },
+        {
+          "apiVersion": "2015-08-01",
+          "name": "[parameters('slotName')]",
+          "type": "slots",
+          "tags": {
+            "displayName": "[concat(parameters('slotName'), ' Deployment Slot')]"
+          },
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/Sites', parameters('appName'))]"
+          ],
+          "properties": {},
+          "resources": [
+            {
+              "apiVersion": "2015-08-01",
+              "name": "appsettings",
+              "type": "config",
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('appName'))]",
+                "[resourceId('Microsoft.Web/sites/slots', parameters('appName'), parameters('slotName'))]"
+              ],
+              "properties": {
+                "AzureWebJobsDashboard": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('functionAppStorageName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('functionAppStorageName')), '2015-05-01-preview').key1)]",
+                "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('functionAppStorageName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('functionAppStorageName')), '2015-05-01-preview').key1)]",
+                "FUNCTIONS_EXTENSION_VERSION": "[parameters('FUNCTIONS_EXTENSION_VERSION')]",
+                "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('functionAppStorageName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('functionAppStorageName')), '2015-05-01-preview').key1)]",
+                "WEBSITE_CONTENTSHARE": "[parameters('slotName')]",
+                "AzureWebJobsSecretStorageType": "Blob"
+              }
+            }
+          ]
+        },
+        {
+          "apiVersion": "2015-08-01",
+          "type": "config",
+          "name": "web",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('appName'))]"
+          ],
+          "properties": {
+            "use32BitWorkerProcess": false
+          }
+        }
+      ]
+    }
+  ],
+  "outputs": {
+    "appName": {
+      "value": "[parameters('appName')]",
+      "type": "string"
+    }
+  }
+}
