@@ -4,7 +4,6 @@
   "parameters": {
     "appName": {
       "type": "string",
-      "maxLength": 7,
       "metadata": {
         "description": "The value to use for the app name. Used as part of the name for all resources which is suffixed by a unique string."
       }
