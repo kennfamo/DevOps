@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appName": {
+      "value": "armslot-Functions-o3fgkvxo63y6u"
+    },
+    "slotName": {
+      "value": "staging"
+    },
+    "storageSKU": {
+      "value": "Standard_LRS",
+    },
+    "FUNCTIONS_EXTENSION_VERSION": {
+      "value": "latest",
+    },
+    "functionAppStorageName": {
+      "value": "armslotfunco3fgkvxo63y6u"
+    },
+    "hostingPlanName": {
+      "value": "armslot-Plan-o3fgkvxo63y6u"
+    }
+  }
+}
